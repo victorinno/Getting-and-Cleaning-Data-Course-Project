@@ -2,6 +2,7 @@ library(tidyr)
 library(dplyr)
 library(plyr)
 
+#creating tables from files
 subject_train <- read.table(file = "UCI HAR Dataset/train/subject_train.txt")
 X_train <- read.table(file = "UCI HAR Dataset/train/X_train.txt")
 Y_train <- read.table(file = "UCI HAR Dataset/train/Y_train.txt")
@@ -10,6 +11,7 @@ subject_test <- read.table(file = "UCI HAR Dataset/test/subject_test.txt")
 X_test <- read.table(file = "UCI HAR Dataset/test/X_test.txt")
 Y_test <- read.table(file = "UCI HAR Dataset/test/Y_test.txt")
 
+names_X_from_file <- read.table(file = "UCI HAR Dataset/features.txt", stringsAsFactors = FALSE)
 activity_labels = read.table('UCI HAR Dataset/activity_labels.txt',header=FALSE)
 
 
@@ -25,7 +27,7 @@ names(activity_labels) <- c("activity", "description")
 names(Y) <- c("activity")
 names(subject) <- c("subject")
 
-names_X_from_file <- read.table(file = "UCI HAR Dataset/features.txt", stringsAsFactors = FALSE)
+
 names(X) <- names_X_from_file$V2
 namesX <- c(names(X), "subject", "activity")
 namesX <- data.frame(namesX, stringsAsFactors = FALSE)
@@ -60,9 +62,11 @@ names(dataset) <- colNamesDataSet;
 
 avarageDataSet <- aggregate(
   dataset[,names(dataset) != c("subject","activity")],
-  by=list(activity=dataset$activity,
-          subject = dataset$subject),
+  by=list(subject = dataset$subject,
+          activity=dataset$activity),
   mean)
+
+avarageDataSet <- arrange(avarageDataSet, subject, activity)
 
 avarageDataSet$activity <- revalue(avarageDataSet$activity, c("1" =  "WALKING",
                                 "2" =  "WALKING_UPSTAIRS",
