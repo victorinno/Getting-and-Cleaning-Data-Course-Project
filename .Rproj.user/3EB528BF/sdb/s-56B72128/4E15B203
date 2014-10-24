@@ -1,0 +1,17 @@
+{
+    "contents" : "library(tidyr)\nlibrary(dplyr)\nlibrary(plyr)\n\nsubject_train <- read.table(file = \"UCI HAR Dataset/train/subject_train.txt\")\nX_train <- read.table(file = \"UCI HAR Dataset/train/X_train.txt\")\nY_train <- read.table(file = \"UCI HAR Dataset/train/Y_train.txt\")\n\nsubject_test <- read.table(file = \"UCI HAR Dataset/test/subject_test.txt\")\nX_test <- read.table(file = \"UCI HAR Dataset/test/X_test.txt\")\nY_test <- read.table(file = \"UCI HAR Dataset/test/Y_test.txt\")\n\nactivity_labels = read.table('UCI HAR Dataset/activity_labels.txt',header=FALSE)\n\n\nX <- rbind(X_train, X_test)\nY <- rbind(Y_train, Y_test)\nsubject <- rbind(subject_train,subject_test)\n\n\nY$V1 <- factor(Y$V1)\n\nnames(activity_labels) <- c(\"activity\", \"description\")\n\nnames(Y) <- c(\"activity\")\nnames(subject) <- c(\"subject\")\n\nnames_X_from_file <- read.table(file = \"UCI HAR Dataset/features.txt\", stringsAsFactors = FALSE)\nnames(X) <- names_X_from_file$V2\nnamesX <- c(names(X), \"subject\", \"activity\")\nnamesX <- data.frame(namesX, stringsAsFactors = FALSE)\nindex <-  c(grepl(\"-mean..\",namesX$namesX) & !grepl(\"-meanFreq..\",namesX$namesX) & !grepl(\"mean..-\",namesX$namesX) | grepl(\"-std..\",namesX$namesX) & !grepl(\"-std()..-\",namesX$namesX))\nnamesX <-namesX[index,]\n\n\n\n\ndataset <-  select(X,match(namesX,names(X))) %>%\n            cbind(subject) %>%\n            cbind(Y)\ncolNamesDataSet <- names(dataset)\n\nfor (i in 1:length(colNamesDataSet)) \n{\n  colNamesDataSet[i] = gsub(\"\\\\()\",\"\",colNamesDataSet[i])\n  colNamesDataSet[i] = gsub(\"-std$\",\"StdDev\",colNamesDataSet[i])\n  colNamesDataSet[i] = gsub(\"-mean\",\"Mean\",colNamesDataSet[i])\n  colNamesDataSet[i] = gsub(\"^(t)\",\"time\",colNamesDataSet[i])\n  colNamesDataSet[i] = gsub(\"^(f)\",\"freq\",colNamesDataSet[i])\n  colNamesDataSet[i] = gsub(\"([Gg]ravity)\",\"Gravity\",colNamesDataSet[i])\n  colNamesDataSet[i] = gsub(\"([Bb]ody[Bb]ody|[Bb]ody)\",\"Body\",colNamesDataSet[i])\n  colNamesDataSet[i] = gsub(\"[Gg]yro\",\"Gyro\",colNamesDataSet[i])\n  colNamesDataSet[i] = gsub(\"AccMag\",\"AccMagnitude\",colNamesDataSet[i])\n  colNamesDataSet[i] = gsub(\"([Bb]odyaccjerkmag)\",\"BodyAccJerkMagnitude\",colNamesDataSet[i])\n  colNamesDataSet[i] = gsub(\"JerkMag\",\"JerkMagnitude\",colNamesDataSet[i])\n  colNamesDataSet[i] = gsub(\"GyroMag\",\"GyroMagnitude\",colNamesDataSet[i])\n};\n\nnames(dataset) <- colNamesDataSet;\n\navarageDataSet <- aggregate(\n  dataset[,names(dataset) != c(\"subject\",\"activity\")],\n  by=list(activity=dataset$activity,\n          subject = dataset$subject),\n  mean)\n            \nfinal_result <- merge(avarageDataSet,activity_labels,by='activity',all.x=TRUE);\n\n",
+    "created" : 1413463336517.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "3173785212",
+    "id" : "4E15B203",
+    "lastKnownWriteTime" : 1414177594,
+    "path" : "~/GitHub/Getting-and-Cleaning-Data-Course-Project/run_analysis.R",
+    "project_path" : "run_analysis.R",
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "source_on_save" : true,
+    "type" : "r_source"
+}
