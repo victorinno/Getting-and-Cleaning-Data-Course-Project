@@ -36,8 +36,8 @@ namesX <-namesX[index,]
 
 
 dataset <-  select(X,match(namesX,names(X))) %>%
-            cbind(subject) %>%
-            cbind(Y)
+  cbind(subject) %>%
+  cbind(Y)
 colNamesDataSet <- names(dataset)
 
 for (i in 1:length(colNamesDataSet)) 
@@ -63,6 +63,10 @@ avarageDataSet <- aggregate(
   by=list(activity=dataset$activity,
           subject = dataset$subject),
   mean)
-            
-final_result <- merge(avarageDataSet,activity_labels,by='activity',all.x=TRUE);
 
+avarageDataSet$activity <- revalue(avarageDataSet$activity, c("1" =  "WALKING",
+                                "2" =  "WALKING_UPSTAIRS",
+                                "3" =  "WALKING_DOWNSTAIRS",
+                                "4" =  "SITTING",
+                                "5" =  "STANDING",
+                                "6" =  "LAYING"))
