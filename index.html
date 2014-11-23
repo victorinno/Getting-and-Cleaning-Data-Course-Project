@@ -1,0 +1,260 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Getting-and-cleaning-data-course-project by victorinno</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Getting-and-cleaning-data-course-project</h1>
+        <p></p>
+
+        <p class="view"><a href="https://github.com/victorinno/Getting-and-Cleaning-Data-Course-Project">View the Project on GitHub <small>victorinno/Getting-and-Cleaning-Data-Course-Project</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/victorinno/Getting-and-Cleaning-Data-Course-Project/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/victorinno/Getting-and-Cleaning-Data-Course-Project/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/victorinno/Getting-and-Cleaning-Data-Course-Project">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p>&lt;!DOCTYPE html&gt;</p>
+
+<p></p>
+
+<p></p>
+
+<p>
+
+</p>
+
+<p></p>
+
+<p></p>README
+
+
+
+<p>
+
+</p>
+
+
+
+code{white-space: pre;}
+
+<p></p>
+
+
+
+
+  pre:not([class]) {
+    background-color: white;
+  }
+
+
+
+
+<p></p>
+
+<p></p>
+
+
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+<div>
+
+
+<div id="header">
+<h1>
+<a id="readme" class="anchor" href="#readme" aria-hidden="true"><span class="octicon octicon-link"></span></a>README</h1>
+<h4>
+<a id="floriano" class="anchor" href="#floriano" aria-hidden="true"><span class="octicon octicon-link"></span></a><em>Floriano</em>
+</h4>
+<h4>
+<a id="sunday-november-23-2014" class="anchor" href="#sunday-november-23-2014" aria-hidden="true"><span class="octicon octicon-link"></span></a><em>Sunday, November 23, 2014</em>
+</h4>
+</div>
+
+<p>Frist we need to read all data</p>
+
+<pre><code>library(tidyr)
+library(dplyr)</code></pre>
+
+<pre><code>## 
+## Attaching package: 'dplyr'
+## 
+## The following object is masked from 'package:stats':
+## 
+##     filter
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+
+<pre><code>library(plyr)</code></pre>
+
+<pre><code>## -------------------------------------------------------------------------
+## You have loaded plyr after dplyr - this is likely to cause problems.
+## If you need functions from both plyr and dplyr, please load plyr first, then dplyr:
+## library(plyr); library(dplyr)
+## -------------------------------------------------------------------------
+## 
+## Attaching package: 'plyr'
+## 
+## The following objects are masked from 'package:dplyr':
+## 
+##     arrange, count, desc, failwith, id, mutate, rename, summarise,
+##     summarize</code></pre>
+
+<pre><code>### Section 1. Merge the training and the test sets to create one data set.
+subject_train &lt;- read.table(file = "UCI HAR Dataset/train/subject_train.txt")
+X_train &lt;- read.table(file = "UCI HAR Dataset/train/X_train.txt")
+Y_train &lt;- read.table(file = "UCI HAR Dataset/train/Y_train.txt")
+
+subject_test &lt;- read.table(file = "UCI HAR Dataset/test/subject_test.txt")
+X_test &lt;- read.table(file = "UCI HAR Dataset/test/X_test.txt")
+Y_test &lt;- read.table(file = "UCI HAR Dataset/test/Y_test.txt")
+
+names_X_from_file &lt;- read.table(file = "UCI HAR Dataset/features.txt", stringsAsFactors = FALSE)
+activity_labels = read.table('UCI HAR Dataset/activity_labels.txt',header=FALSE)</code></pre>
+
+<p>Then we need to merge those sets</p>
+
+<pre><code>X &lt;- rbind(X_train, X_test)
+Y &lt;- rbind(Y_train, Y_test)
+subject &lt;- rbind(subject_train,subject_test)</code></pre>
+
+<p>Now we do some work to make a better descreptive names</p>
+
+<pre><code>Y$V1 &lt;- factor(Y$V1)
+
+
+names(activity_labels) &lt;- c("activity", "description")
+
+names(Y) &lt;- c("activity")
+names(subject) &lt;- c("subject")
+
+#filtering the X variables names
+names(X) &lt;- names_X_from_file$V2
+namesX &lt;- c(names(X))
+namesX &lt;- data.frame(namesX, stringsAsFactors = FALSE)
+index &lt;-  c(grepl("-mean..",namesX$namesX) &amp; !grepl("-meanFreq..",namesX$namesX) &amp; !grepl("mean..-",namesX$namesX) | grepl("-std..",namesX$namesX) &amp; !grepl("-std()..-",namesX$namesX))
+namesX &lt;-namesX[index,]
+
+
+#extraction of the variables
+dataset &lt;-  X[,match(namesX,names(X))] %&gt;%
+  cbind(subject) %&gt;%
+  cbind(Y)
+colNamesDataSet &lt;- names(dataset)
+
+
+## Section 4. Appropriately label the data set with descriptive activity names.
+for (i in 1:length(colNamesDataSet)) 
+{
+  colNamesDataSet[i] = gsub("\\()","",colNamesDataSet[i])
+  colNamesDataSet[i] = gsub("-std$","StdDev",colNamesDataSet[i])
+  colNamesDataSet[i] = gsub("-mean","Mean",colNamesDataSet[i])
+  colNamesDataSet[i] = gsub("^(t)","time",colNamesDataSet[i])
+  colNamesDataSet[i] = gsub("^(f)","freq",colNamesDataSet[i])
+  colNamesDataSet[i] = gsub("([Gg]ravity)","Gravity",colNamesDataSet[i])
+  colNamesDataSet[i] = gsub("([Bb]ody[Bb]ody|[Bb]ody)","Body",colNamesDataSet[i])
+  colNamesDataSet[i] = gsub("[Gg]yro","Gyro",colNamesDataSet[i])
+  colNamesDataSet[i] = gsub("AccMag","AccMagnitude",colNamesDataSet[i])
+  colNamesDataSet[i] = gsub("([Bb]odyaccjerkmag)","BodyAccJerkMagnitude",colNamesDataSet[i])
+  colNamesDataSet[i] = gsub("JerkMag","JerkMagnitude",colNamesDataSet[i])
+  colNamesDataSet[i] = gsub("GyroMag","GyroMagnitude",colNamesDataSet[i])
+};
+
+names(dataset) &lt;- colNamesDataSet;</code></pre>
+
+<p>To finish we create a new dataset</p>
+
+<pre><code>## Section 5. Create a second, independent tidy data set with the average of each variable for each activity and each subject. 
+#create tidy table
+avarageDataSet &lt;- aggregate(
+  dataset[,names(dataset) != c("subject","activity")],
+  by=list(subject = dataset$subject,
+          activity=dataset$activity),
+  mean)</code></pre>
+
+<p>Arrange it and change the activite variable from code to a descriptive text</p>
+
+<pre><code>#arrange by subject and activity
+avarageDataSet &lt;- arrange(avarageDataSet, subject, activity)
+
+#revalue activity for better understanding
+avarageDataSet$activity &lt;- revalue(avarageDataSet$activity, c("1" =  "WALKING",
+                                "2" =  "WALKING_UPSTAIRS",
+                                "3" =  "WALKING_DOWNSTAIRS",
+                                "4" =  "SITTING",
+                                "5" =  "STANDING",
+                                "6" =  "LAYING"))
+avarageDataSet &lt;- tbl_df(avarageDataSet)</code></pre>
+
+<p>Finally we create a new txt with the result fo our work</p>
+
+<pre><code>write.table(avarageDataSet, 'avarageDataSet.txt',row.names=TRUE,sep='\t');
+avarageDataSet</code></pre>
+
+<pre><code>## Source: local data frame [180 x 20]
+## 
+##    subject           activity timeBodyAccMagnitudeMean
+## 1        1            WALKING              -0.13697118
+## 2        1   WALKING_UPSTAIRS              -0.12992763
+## 3        1 WALKING_DOWNSTAIRS               0.02718829
+## 4        1            SITTING              -0.94853679
+## 5        1           STANDING              -0.98427821
+## 6        1             LAYING              -0.84192915
+## 7        2            WALKING              -0.29040759
+## 8        2   WALKING_UPSTAIRS              -0.10732268
+## 9        2 WALKING_DOWNSTAIRS               0.08995112
+## 10       2            SITTING              -0.96789362
+## ..     ...                ...                      ...
+## Variables not shown: timeBodyAccMagnitudeStdDev (dbl),
+##   timeGravityAccMagnitudeMean (dbl), timeGravityAccMagnitudeStdDev (dbl),
+##   timeBodyAccJerkMagnitudeMean (dbl), timeBodyAccJerkMagnitudeStdDev
+##   (dbl), timeBodyGyroMagnitudeMean (dbl), timeBodyGyroMagnitudeStdDev
+##   (dbl), timeBodyGyroJerkMagnitudeMean (dbl),
+##   timeBodyGyroJerkMagnitudeStdDev (dbl), freqBodyAccMagnitudeMean (dbl),
+##   freqBodyAccMagnitudeStdDev (dbl), freqBodyAccJerkMagnitudeMean (dbl),
+##   freqBodyAccJerkMagnitudeStdDev (dbl), freqBodyGyroMagnitudeMean (dbl),
+##   freqBodyGyroMagnitudeStdDev (dbl), freqBodyGyroJerkMagnitudeMean (dbl),
+##   freqBodyGyroJerkMagnitudeStdDev (dbl)</code></pre>
+
+<p></p>
+</div>
+
+
+
+
+
+
+
+<p>
+</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/victorinno">victorinno</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
